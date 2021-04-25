@@ -44,7 +44,7 @@ namespace LammpsWithAngle
                     X = atomO.X,
                     Y = atomO.Y,
                     Z = atomO.Z
-                });
+                }.FixInvalid(lammpsData));
 
                 foreach (var atomH in anotherAtoms.Where(a => a.Type == (int)AtomType.H))
                 {
@@ -68,7 +68,7 @@ namespace LammpsWithAngle
                         X = atomH.X,
                         Y = atomH.Y,
                         Z = atomH.Z
-                    });
+                    }.FixInvalid(lammpsData));
 
                     waterBondId++;
                     waterBonds.Add(new Bond
@@ -126,7 +126,7 @@ namespace LammpsWithAngle
                     X = atomC.X,
                     Y = atomC.Y,
                     Z = atomC.Z
-                });
+                }.FixInvalid(lammpsData));
 
                 foreach (var atomH in anotherAtoms.Where(a => a.Type == (int)AtomType.H))
                 {
@@ -150,7 +150,7 @@ namespace LammpsWithAngle
                         X = atomH.X,
                         Y = atomH.Y,
                         Z = atomH.Z
-                    });
+                    }.FixInvalid(lammpsData));
 
                     methaneBondId++;
                     methaneBonds.Add(new Bond
@@ -274,6 +274,32 @@ namespace LammpsWithAngle
             }
 
             return atoms;
+        }
+
+        private static Atom FixInvalid(this Atom atom, LammpsData lammpsData)
+        {
+            if (atom.X < 0)
+            {
+                double oldX = atom.X;
+                atom.X += (lammpsData.Xhi - lammpsData.Xlo);
+                Log.Logger.Information("Fixed invalid Y {0} to {1}", 
+                    oldX, atom.Y);
+            }
+            if (atom.Y < 0)
+            {
+                double oldY = atom.Y;
+                atom.Y += (lammpsData.Yhi - lammpsData.Ylo);
+                Log.Logger.Information("Fixed invalid Y {0} to {1}", 
+                    oldY, atom.Y);
+            }
+            if (atom.Z < 0)
+            {
+                double oldZ = atom.Z;
+                atom.Z += (lammpsData.Zhi - lammpsData.Zlo);
+                Log.Logger.Information("Fixed invalid Y {0} to {1}", 
+                    oldZ, atom.Y);
+            }
+            return atom;
         }
     }
 }
