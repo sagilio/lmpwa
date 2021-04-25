@@ -30,13 +30,13 @@ namespace LammpsWithAngle.Data
             set => _data[1] = value;
         }
 
-        public double LinkedAtomId
+        public double AtomId1
         {
             get => _data[2];
             set => _data[2] = value;
         }
 
-        public double AtomId
+        public double AtomId2
         {
             get => _data[3];
             set => _data[3] = value;
@@ -44,7 +44,7 @@ namespace LammpsWithAngle.Data
         
         public override string ToString()
         {
-            return string.Join("       ", _data);
+            return string.Join("    ", _data);
         }
 
         public static Bond Parse(string line)

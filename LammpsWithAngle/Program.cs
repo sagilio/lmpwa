@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using LammpsWithAngle.Static;
 using McMaster.Extensions.CommandLineUtils;
@@ -36,27 +38,55 @@ namespace LammpsWithAngle
             return await CommandLineApplication.ExecuteAsync<Program>(args);
         }
 
-        [Argument(0, Description = "The source lammps data file.")]
+        [Argument(0, Description = "The source lammps data file. (source.lmp)")]
         public string SourceFile { get; set; } = "source.lmp";
 
-        [Argument(1, Description = "The lammps data file with angle dat.")]
+        [Argument(1, Description = "The lammps data file with angle dat. (result.lmp)")]
         public string TargetFile { get; set; } = "result.lmp";
 
-        [Option("-l|--large27", Description = "Determine whether large 27 times.")]
+        [Option("-l|--large27", Description = "Determine whether large 27 times. (false)")]
         public bool Large27 { get; set; } = false;
 
-        [Option("-m|--mode", Description = "Determine atom export mode.")]
-        public string Mode { get; set; } = Config.Mode;
+        [Option("-rsa|--remove-surface-angle", Description = "Determine whether remove surface angle. (false)")]
+        public bool RemoveSurfaceAngle { get; set; } = false;
 
         private async Task OnExecuteAsync()
         {
-            Config.Mode = Mode;
-            Log.Logger.Information($"Will read from {SourceFile}, and write to {TargetFile}.");
-            Log.Logger.Information($"Atom export mode is {Config.Mode}.");
-            LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(SourceFile);
-            lammpsData = lammpsData.CompleteBondAndAngle(Large27);
+            var appOptions = new AppOptions
+            {
+                Large27 = Large27,
+                RemoveSurfaceAngles = RemoveSurfaceAngle,
+                SourceFile = SourceFile,
+                TargetFile = TargetFile
+            };
+
+            Log.Logger.Information(appOptions.ToString());
+
+            LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(appOptions.SourceFile);
+            lammpsData = lammpsData.CompleteBondAndAngle(appOptions.Large27);
             Log.Logger.Information("End to complete.");
-            await LammpsDataSerializer.SerializeToFileAsync(lammpsData, TargetFile);
+
+            await LammpsDataSerializer.SerializeToFileAsync(lammpsData, appOptions.TargetFile, new SerializeOptions
+            {
+                RemoveSurfaceAngles = appOptions.RemoveSurfaceAngles
+            });
+        }
+
+        public class AppOptions
+        {
+            public bool Large27 { get; set; }
+            public bool RemoveSurfaceAngles { get; set; }
+            public string SourceFile { get; set; } = "source.lmp";
+            public string TargetFile { get; set; } = "result.lmp";
+
+            public override string ToString()
+            {
+                var builder = new StringBuilder();
+                builder.AppendLine($"Will read from {SourceFile}, and write to {TargetFile}.");
+                builder.AppendLine($"Large 27 times is {Large27}.");
+                builder.AppendLine($"Remove surface angles is {RemoveSurfaceAngles}.");
+                return builder.ToString();
+            }
         }
     }
 }

@@ -9,16 +9,14 @@ using System.Collections.Generic;
 
 namespace LammpsWithAngle
 {
-    public class LammpsDataSerializer
+    public static class LammpsDataSerializer
     {
-        private static readonly string NewLine = "\n";
-
-        public static async Task SerializeToFileAsync(LammpsData lammpsData, string path)
+        public static async Task SerializeToFileAsync(LammpsData lammpsData, string path, SerializeOptions options)
         {
             Log.Logger.Information("Start to serialize to file.");
             await using FileStream fileStream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.Read);
             await using var writer = new StreamWriter(fileStream);
-            string header = SerializeHeader(lammpsData);
+            string header = SerializeHeader(lammpsData, options);
             await writer.WriteAsync(header);
             Log.Logger.Information("Serialized Header.");
             if (lammpsData.Masses.Count > 0)
@@ -30,17 +28,16 @@ namespace LammpsWithAngle
                 //'Ow  Hw  Cm  Hm
                 //'1   2   3   4
                 lammpsData.Masses.Add(4, lammpsData.Masses[2]);
-                await WriteDataAsync(writer, "Masses", lammpsData.Masses.Select(
-                    mass => $"{mass.Key}   {mass.Value}"));
+                await WriteDataAsync(writer, "Masses", lammpsData.Masses.Select(mass => $"{mass.Key}   {mass.Value}"), options);
                 Log.Logger.Information("Serialize Masses.");
             }
-            await WriteDataAsync(writer, "Atoms  # full", lammpsData.Atoms);
+            await WriteDataAsync(writer, "Atoms  # full", lammpsData.Atoms, options);
             Log.Logger.Information("Serialized Atoms, count is {0}", lammpsData.AtomCount);
-            await WriteDataAsync(writer, "Bonds", lammpsData.Bonds);
+            await WriteDataAsync(writer, "Bonds", lammpsData.Bonds, options);
             Log.Logger.Information("Serialized Bonds, count is {0}", lammpsData.BondCount);
-            await WriteDataAsync(writer, "Angles", lammpsData.Angles);
+            await WriteDataAsync(writer, "Angles", lammpsData.Angles, options);
             Log.Logger.Information("Serialized Angles, count is {0}", lammpsData.AngleCount);
-            Log.Logger.Information("Serialized Success, Header is: {1}{0}", header, NewLine);
+            Log.Logger.Information("Serialized Success, Header is: {1}{0}", header, options.NewLine);
         }
 
         public static async Task<LammpsData> DeserializeFromFileAsync(string path)
@@ -90,21 +87,21 @@ namespace LammpsWithAngle
                 throw new InvalidOperationException("Source data format verity error.");
             }
 
-            Log.Logger.Information("Success deserialize, Header is: {1}{0}", SerializeHeader(lammpsData), Environment.NewLine);
+            Log.Logger.Information("Success deserialize, Header is: {1}{0}", 
+                SerializeHeader(lammpsData, new SerializeOptions()), Environment.NewLine);
             return lammpsData;
         }
 
-        private static string SerializeHeader(LammpsData lammpsData)
+        private static string SerializeHeader(LammpsData lammpsData, SerializeOptions options)
         {
+            string newLine = options.NewLine;
             var builder = new StringBuilder();
             #region Comment
             builder.Append("# File created by lmpwa, made by Tang Xianhe.");
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("# {0} water, {1} methene, {2} total", lammpsData.WaterCount, lammpsData.MethaneCount, lammpsData.TotalCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             #endregion
-
-            builder.Append(NewLine);
 
             #region Count
             // 4806 atoms
@@ -112,48 +109,50 @@ namespace LammpsWithAngle
             // 2538 angles
             // 0 dihedrals
             // 0 impropers
+            builder.Append(newLine);
             builder.AppendFormat("{0} atoms", lammpsData.AtomCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} bonds", lammpsData.BondCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} angles", lammpsData.AngleCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} dihedrals", lammpsData.Dihedrals);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} impropers", lammpsData.Impropers);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             #endregion
-
-            builder.Append(NewLine);
 
             #region Type Count
             // 4 atom types
             // 2 bond types
             // 2 angle types
+            builder.Append(newLine);
             builder.AppendFormat("{0} atom types", lammpsData.AtomTypeCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} bond types", lammpsData.BondTypeCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} angle types", lammpsData.AngleTypeCount);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             #endregion
 
-            builder.Append(NewLine);
+            builder.Append(newLine);
 
             #region Xlo Xhi
             builder.AppendFormat("{0} {1} xlo xhi", lammpsData.Xlo, lammpsData.Xhi);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} {1} ylo yhi", lammpsData.Ylo, lammpsData.Yhi);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             builder.AppendFormat("{0} {1} zlo zhi", lammpsData.Zlo, lammpsData.Zhi);
-            builder.Append(NewLine);
+            builder.Append(newLine);
             #endregion
 
-            builder.Append(NewLine);
-
             #region XY XZ YZ
-            builder.AppendFormat("{0} {1} {2} xy xz yz", lammpsData.Xy, lammpsData.Xz, lammpsData.Yz);
-            builder.Append(NewLine);
+            if (options.RemoveSurfaceAngles is false)
+            {
+                builder.Append(newLine);
+                builder.AppendFormat("{0} {1} {2} xy xz yz", lammpsData.Xy, lammpsData.Xz, lammpsData.Yz);
+                builder.Append(newLine);
+            }
             #endregion
 
             return builder.ToString();
@@ -255,16 +254,17 @@ namespace LammpsWithAngle
             return lammpsData;
         }
 
-        private static async Task WriteDataAsync<T>(TextWriter writer, string dataType, IEnumerable<T> contents)
+        private static async Task WriteDataAsync<T>(TextWriter writer, string dataType, IEnumerable<T> contents, SerializeOptions options)
         {
-            await writer.WriteAsync(NewLine);
+            string newLine = options.NewLine;
+            await writer.WriteAsync(newLine);
             await writer.WriteAsync(dataType);
-            await writer.WriteAsync(NewLine);
-            await writer.WriteAsync(NewLine);
+            await writer.WriteAsync(newLine);
+            await writer.WriteAsync(newLine);
             foreach (T content in contents)
             {
                 await writer.WriteAsync(content?.ToString());
-                await writer.WriteAsync(NewLine);
+                await writer.WriteAsync(newLine);
             }
         }
 

@@ -33,8 +33,8 @@ namespace LammpsWithAngle
 
         public IDictionary<int, double> Masses = new Dictionary<int, double>();
 
-        public ICollection<Atom> Atoms { get; set; } = new List<Atom>();
-        public ICollection<Bond> Bonds { get; set; } = new List<Bond>();
-        public ICollection<Angle> Angles { get; set; } = new List<Angle>();
+        public List<Atom> Atoms { get; set; } = new List<Atom>();
+        public List<Bond> Bonds { get; set; } = new List<Bond>();
+        public List<Angle> Angles { get; set; } = new List<Angle>();
     }
 }

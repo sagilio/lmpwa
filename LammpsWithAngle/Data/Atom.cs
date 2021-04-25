@@ -21,19 +21,19 @@ namespace LammpsWithAngle.Data
 
         public int Id
         {
-            get => (int) _data[0];
+            get => (int)_data[0];
             set => _data[0] = value;
         }
 
-        public double Chain
+        public int Chain
         {
-            get => _data[1];
+            get => (int)_data[1];
             set => _data[1] = value;
         }
 
         public int Type
         {
-            get => (int) _data[2];
+            get => (int)_data[2];
             set => _data[2] = value;
         }
 
@@ -63,11 +63,8 @@ namespace LammpsWithAngle.Data
 
         public override string ToString()
         {
-            if (Config.Mode is "atomic")
-            {
-                return string.Join("       ", new []{Id, Type, X, Y, Z});
-            }
-            return string.Join("       ", _data);
+            return string.Join("    ", Id.ToString(), Chain.ToString(), Type.ToString(),
+                Charge.ToString("F8"), X.ToString("F8"), Y.ToString("F8"), Z.ToString("F8"));
         }
 
         public static Atom Parse(string line)
@@ -78,7 +75,7 @@ namespace LammpsWithAngle.Data
 
         public static Atom Parse(IEnumerable<string> data)
         {
-            return new (data.Select(double.Parse));
+            return new(data.Select(double.Parse));
         }
     }
 }
