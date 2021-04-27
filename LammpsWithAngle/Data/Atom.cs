@@ -67,15 +67,34 @@ namespace LammpsWithAngle.Data
                 Charge.ToString("F8"), X.ToString("F8"), Y.ToString("F8"), Z.ToString("F8"));
         }
 
-        public static Atom Parse(string line)
+        public static Atom Parse(string line, string mode = "atomic")
         {
             string[] data = line.Split(" ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            return new Atom(data.Select(double.Parse));
+            return Parse(data, mode);
         }
 
-        public static Atom Parse(IEnumerable<string> data)
+        public static Atom Parse(IEnumerable<string> data, string mode = "atomic")
         {
-            return new(data.Select(double.Parse));
+            if (mode is "all")
+            {
+                return new Atom(data.Select(double.Parse));
+            }
+
+            string[] dataArray = data as string[] ?? data.ToArray();
+            if (dataArray.Length is not 5)
+            {
+                throw new InvalidOperationException("atomic mod need 5 data in one row.");
+            }
+
+            var atom = new Atom
+            {
+                Id = int.Parse(dataArray[0]),
+                Type = int.Parse(dataArray[1]),
+                X = double.Parse(dataArray[2]),
+                Y = double.Parse(dataArray[3]),
+                Z = double.Parse(dataArray[4])
+            };
+            return atom;
         }
     }
 }

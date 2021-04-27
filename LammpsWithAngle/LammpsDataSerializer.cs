@@ -11,7 +11,12 @@ namespace LammpsWithAngle
 {
     public static class LammpsDataSerializer
     {
-        public static async Task SerializeToFileAsync(LammpsData lammpsData, string path, SerializeOptions options)
+        public static Task SerializeToFileAsync(LammpsData lammpsData, string path)
+        {
+            return SerializeToFileAsync(lammpsData, path, new LammpsDataSerializeOptions());
+        }
+
+        public static async Task SerializeToFileAsync(LammpsData lammpsData, string path, LammpsDataSerializeOptions options)
         {
             Log.Logger.Information("Start to serialize to file.");
             await using FileStream fileStream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.Read);
@@ -31,7 +36,7 @@ namespace LammpsWithAngle
                 await WriteDataAsync(writer, "Masses", lammpsData.Masses.Select(mass => $"{mass.Key}   {mass.Value}"), options);
                 Log.Logger.Information("Serialize Masses.");
             }
-            await WriteDataAsync(writer, "Atoms  # full", lammpsData.Atoms, options);
+            await WriteDataAsync(writer, $"Atoms  # {options.Mode}", lammpsData.Atoms, options);
             Log.Logger.Information("Serialized Atoms, count is {0}", lammpsData.AtomCount);
             await WriteDataAsync(writer, "Bonds", lammpsData.Bonds, options);
             Log.Logger.Information("Serialized Bonds, count is {0}", lammpsData.BondCount);
@@ -40,7 +45,12 @@ namespace LammpsWithAngle
             Log.Logger.Information("Serialized Success, Header is: {1}{0}", header, options.NewLine);
         }
 
-        public static async Task<LammpsData> DeserializeFromFileAsync(string path)
+        public static Task<LammpsData> DeserializeFromFileAsync(string path)
+        {
+            return DeserializeFromFileAsync(path, new LammpsDataDeserializeOptions());
+        }
+
+        public static async Task<LammpsData> DeserializeFromFileAsync(string path, LammpsDataDeserializeOptions options)
         {
             if (File.Exists(path) is false)
             {
@@ -78,7 +88,7 @@ namespace LammpsWithAngle
                     lammpsData = DeserializeHeader(lammpsData, line, group, verityData);
                 }
 
-                lammpsData = DeserializeData(lammpsData, line, group, dataType);
+                lammpsData = DeserializeData(lammpsData, line, group, dataType, options);
             }
 
             bool verityResult = Verity(lammpsData, verityData);
@@ -88,11 +98,11 @@ namespace LammpsWithAngle
             }
 
             Log.Logger.Information("Success deserialize, Header is: {1}{0}", 
-                SerializeHeader(lammpsData, new SerializeOptions()), Environment.NewLine);
+                SerializeHeader(lammpsData, new LammpsDataSerializeOptions()), Environment.NewLine);
             return lammpsData;
         }
 
-        private static string SerializeHeader(LammpsData lammpsData, SerializeOptions options)
+        private static string SerializeHeader(LammpsData lammpsData, LammpsDataSerializeOptions options)
         {
             string newLine = options.NewLine;
             var builder = new StringBuilder();
@@ -234,12 +244,12 @@ namespace LammpsWithAngle
             return lammpsData;
         }
 
-        private static LammpsData DeserializeData(LammpsData lammpsData, string line, string[] group, string dataType)
+        private static LammpsData DeserializeData(LammpsData lammpsData, string line, string[] group, string dataType, LammpsDataDeserializeOptions options)
         {
             switch (dataType)
             {
                 case "Atoms":
-                    lammpsData.Atoms.Add(Atom.Parse(group));
+                    lammpsData.Atoms.Add(Atom.Parse(group, options.Mode));
                     break;
                 case "Bonds":
                     lammpsData.Bonds.Add(Bond.Parse(group));
@@ -254,7 +264,7 @@ namespace LammpsWithAngle
             return lammpsData;
         }
 
-        private static async Task WriteDataAsync<T>(TextWriter writer, string dataType, IEnumerable<T> contents, SerializeOptions options)
+        private static async Task WriteDataAsync<T>(TextWriter writer, string dataType, IEnumerable<T> contents, LammpsDataSerializeOptions options)
         {
             string newLine = options.NewLine;
             await writer.WriteAsync(newLine);

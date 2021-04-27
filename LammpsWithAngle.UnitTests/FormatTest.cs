@@ -20,7 +20,7 @@ namespace LammpsWithAngle.UnitTests
                 Z = 3.936000109
             };
             var formatString = position.ToString();
-            Assert.Equal(position.Data, Atom.Parse(formatString).Data);
+            Assert.Equal(position.Data, Atom.Parse(formatString, "all").Data);
         }
     }
 }

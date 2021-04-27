@@ -12,7 +12,7 @@ namespace LammpsWithAngle
     public static class LammpsDataExtensions
     {
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public static LammpsData CompleteBondAndAngle(this LammpsData lammpsData, bool large27)
+        public static LammpsData CompleteBondAndAngle(this LammpsData lammpsData, bool large27, bool fixInvalidAxis)
         {
             lammpsData.Bonds.Clear();
             lammpsData.Angles.Clear();
@@ -44,7 +44,7 @@ namespace LammpsWithAngle
                     X = atomO.X,
                     Y = atomO.Y,
                     Z = atomO.Z
-                }.FixInvalid(lammpsData));
+                });
 
                 foreach (var atomH in anotherAtoms.Where(a => a.Type == (int)AtomType.H))
                 {
@@ -68,7 +68,7 @@ namespace LammpsWithAngle
                         X = atomH.X,
                         Y = atomH.Y,
                         Z = atomH.Z
-                    }.FixInvalid(lammpsData));
+                    });
 
                     waterBondId++;
                     waterBonds.Add(new Bond
@@ -126,7 +126,7 @@ namespace LammpsWithAngle
                     X = atomC.X,
                     Y = atomC.Y,
                     Z = atomC.Z
-                }.FixInvalid(lammpsData));
+                });
 
                 foreach (var atomH in anotherAtoms.Where(a => a.Type == (int)AtomType.H))
                 {
@@ -150,7 +150,7 @@ namespace LammpsWithAngle
                         X = atomH.X,
                         Y = atomH.Y,
                         Z = atomH.Z
-                    }.FixInvalid(lammpsData));
+                    });
 
                     methaneBondId++;
                     methaneBonds.Add(new Bond
@@ -239,6 +239,14 @@ namespace LammpsWithAngle
 
             }
 
+            if (fixInvalidAxis)
+            {
+                foreach (var atom in atoms)
+                {
+                    atom.FixInvalidAxis(lammpsData);
+                }
+            }
+
             lammpsData.Atoms = atoms;
             lammpsData.ChainsCount = nowChainId;
             lammpsData.AtomTypeCount = 4;
@@ -276,14 +284,14 @@ namespace LammpsWithAngle
             return atoms;
         }
 
-        private static Atom FixInvalid(this Atom atom, LammpsData lammpsData)
+        private static Atom FixInvalidAxis(this Atom atom, LammpsData lammpsData)
         {
             if (atom.X < 0)
             {
                 double oldX = atom.X;
                 atom.X += (lammpsData.Xhi - lammpsData.Xlo);
-                Log.Logger.Information("Fixed invalid Y {0} to {1}", 
-                    oldX, atom.Y);
+                Log.Logger.Information("Fixed invalid X {0} to {1}", 
+                    oldX, atom.X);
             }
             if (atom.Y < 0)
             {
@@ -296,8 +304,8 @@ namespace LammpsWithAngle
             {
                 double oldZ = atom.Z;
                 atom.Z += (lammpsData.Zhi - lammpsData.Zlo);
-                Log.Logger.Information("Fixed invalid Y {0} to {1}", 
-                    oldZ, atom.Y);
+                Log.Logger.Information("Fixed invalid Z {0} to {1}", 
+                    oldZ, atom.Z);
             }
             return atom;
         }
