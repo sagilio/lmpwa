@@ -8,7 +8,6 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 
 // ReSharper disable ClassNeverInstantiated.Global
-
 namespace LammpsWithAngle
 {
     [Command(Name = "lmpwa", Description = "Add angle info to lmp file.")]
@@ -43,6 +42,9 @@ namespace LammpsWithAngle
 
         [Option("-read-mode", Description = "Determine read source file mode. (atomic)")]
         public string ReadMode { get; set; } = "atomic";
+        
+        [Option("-wm|--water-model", Description = "Water model name will be used. (SPC)")]
+        public string WaterModel { get; set; } = "SPC";
 
         [Option("-l|--large27", Description = "Determine whether large 27 times. (false)")]
         public bool Large27 { get; set; } = false;
@@ -57,18 +59,19 @@ namespace LammpsWithAngle
         {
             var appOptions = new AppOptions
             {
-                Large27 = Large27,
-                RemoveSurfaceAngles = RemoveSurfaceAngle,
                 SourceFile = SourceFile,
                 TargetFile = TargetFile,
-                FixInvalidAxis = FixInvalidAxis,
-                ReadMode = ReadMode
+                ReadMode = ReadMode,
+                WaterModel = WaterModel,
+                Large27 = Large27,
+                RemoveSurfaceAngles = RemoveSurfaceAngle,
+                FixInvalidAxis = FixInvalidAxis
             };
 
             Log.Logger.Information(appOptions.ToString());
 
             LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(appOptions.SourceFile);
-            lammpsData = lammpsData.CompleteBondAndAngle(appOptions.Large27, appOptions.FixInvalidAxis);
+            lammpsData = lammpsData.CompleteBondAndAngle(appOptions.WaterModel, appOptions.Large27, appOptions.FixInvalidAxis);
             Log.Logger.Information("End to complete.");
 
             await LammpsDataSerializer.SerializeToFileAsync(lammpsData, appOptions.TargetFile, new LammpsDataSerializeOptions
@@ -82,6 +85,7 @@ namespace LammpsWithAngle
             public string SourceFile { get; set; } = "source.lmp";
             public string TargetFile { get; set; } = "result.lmp";
             public string ReadMode { get; set; } = "atomic";
+            public string WaterModel { get; set; } = "SPC";
             public bool Large27 { get; set; }
             public bool RemoveSurfaceAngles { get; set; }
             public bool FixInvalidAxis { get; set; }
@@ -91,6 +95,7 @@ namespace LammpsWithAngle
                 var builder = new StringBuilder();
                 builder.AppendLine($"Will read from {SourceFile}, and write to {TargetFile}.");
                 builder.AppendLine($"Read mode is {ReadMode}.");
+                builder.AppendLine($"Water model is {WaterModel}.");
                 builder.AppendLine($"Large 27 times is {Large27}.");
                 builder.AppendLine($"Remove surface angles is {RemoveSurfaceAngles}.");
                 builder.AppendLine($"Fix invalid axis is {FixInvalidAxis}.");

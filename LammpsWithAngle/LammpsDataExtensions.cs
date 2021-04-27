@@ -12,8 +12,9 @@ namespace LammpsWithAngle
     public static class LammpsDataExtensions
     {
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public static LammpsData CompleteBondAndAngle(this LammpsData lammpsData, bool large27, bool fixInvalidAxis)
+        public static LammpsData CompleteBondAndAngle(this LammpsData lammpsData, string waterModel, bool large27, bool fixInvalidAxis)
         {
+            var charges = Charges.GetCharges(waterModel);
             lammpsData.Bonds.Clear();
             lammpsData.Angles.Clear();
 
@@ -40,7 +41,7 @@ namespace LammpsWithAngle
                     Id = waterAtomId,
                     Chain = waterChainId,
                     Type = (int)AtomType.O,
-                    Charge = Potential.O,
+                    Charge = charges.O,
                     X = atomO.X,
                     Y = atomO.Y,
                     Z = atomO.Z
@@ -64,7 +65,7 @@ namespace LammpsWithAngle
                         Id = waterAtomId,
                         Chain = waterChainId,
                         Type = (int)AtomType.H,
-                        Charge = Potential.H,
+                        Charge = charges.H,
                         X = atomH.X,
                         Y = atomH.Y,
                         Z = atomH.Z
@@ -122,7 +123,7 @@ namespace LammpsWithAngle
                     Id = methaneAtomId,
                     Chain = methaneChainId,
                     Type = (int)AtomType.C,
-                    Charge = Potential.C,
+                    Charge = charges.C,
                     X = atomC.X,
                     Y = atomC.Y,
                     Z = atomC.Z
@@ -146,7 +147,7 @@ namespace LammpsWithAngle
                         Id = methaneAtomId,
                         Chain = methaneChainId,
                         Type = (int)AtomType.H_CH4,
-                        Charge = Potential.H_CH4,
+                        Charge = charges.H_CH4,
                         X = atomH.X,
                         Y = atomH.Y,
                         Z = atomH.Z
@@ -162,7 +163,7 @@ namespace LammpsWithAngle
                     });
                 }
 
-                if (methaneAtoms.Count != 5)
+                if (methaneAtoms.Count is not 5)
                 {
                     Log.Logger.Information("Remove error methane atoms of ids: {0}.",
                         string.Join(", ", methaneAtoms.Select(a => a.Id)));
