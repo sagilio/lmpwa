@@ -176,7 +176,7 @@ namespace LammpsWithAngle
                 nowAngleId++;
                 lammpsData.Angles.Add(new Angle
                 {
-                    Id = methaneAtomId,
+                    Id = nowAngleId,
                     Type = (int)AtomType.H,
                     AtomId1 = methaneAtomId - 1,
                     AtomId2 = methaneAtomCId,
@@ -186,58 +186,57 @@ namespace LammpsWithAngle
                 nowAngleId++;
                 lammpsData.Angles.Add(new Angle
                 {
-                    Id = methaneAtomId,
+                    Id = nowAngleId,
                     Type = (int)AtomType.H,
                     AtomId1 = methaneAtomId - 2,
                     AtomId2 = methaneAtomCId,
                     AtomId3 = methaneAtomId - 0
                 });
 
-                lammpsData.Angles.Add(new Angle
-                {
-                    Id = methaneAtomId,
-                    Type = (int)AtomType.H,
-                    AtomId1 = methaneAtomId - 3,
-                    AtomId2 = methaneAtomCId,
-                    AtomId3 = methaneAtomId - 0
-                });
-
-                methaneBondId++;
-                lammpsData.Angles.Add(new Angle
-                {
-                    Id = methaneAtomId,
-                    Type = (int)AtomType.H,
-                    AtomId1 = methaneAtomId - 3,
-                    AtomId2 = methaneAtomCId,
-                    AtomId3 = methaneAtomId - 1
-                });
-
-                methaneBondId++;
-                lammpsData.Angles.Add(new Angle
-                {
-                    Id = methaneAtomId,
-                    Type = (int)AtomType.H,
-                    AtomId1 = methaneAtomId - 2,
-                    AtomId2 = methaneAtomCId,
-                    AtomId3 = methaneAtomId - 1
-                });
-
-
-                methaneBondId++;
+                nowAngleId++;
                 lammpsData.Angles.Add(new Angle
                 {
                     Id = nowAngleId,
                     Type = (int)AtomType.H,
-                    AtomId1 = nowAtomId - 2,
+                    AtomId1 = methaneAtomId - 3,
                     AtomId2 = methaneAtomCId,
-                    AtomId3 = nowAtomId - 3
+                    AtomId3 = methaneAtomId - 0
+                });
+
+                nowAngleId++;
+                lammpsData.Angles.Add(new Angle
+                {
+                    Id = nowAngleId,
+                    Type = (int)AtomType.H,
+                    AtomId1 = methaneAtomId - 3,
+                    AtomId2 = methaneAtomCId,
+                    AtomId3 = methaneAtomId - 1
+                });
+
+                nowAngleId++;
+                lammpsData.Angles.Add(new Angle
+                {
+                    Id = nowAngleId,
+                    Type = (int)AtomType.H,
+                    AtomId1 = methaneAtomId - 2,
+                    AtomId2 = methaneAtomCId,
+                    AtomId3 = methaneAtomId - 1
+                });
+
+                nowAngleId++;
+                lammpsData.Angles.Add(new Angle
+                {
+                    Id = nowAngleId,
+                    Type = (int)AtomType.H,
+                    AtomId1 = methaneAtomId - 2,
+                    AtomId2 = methaneAtomCId,
+                    AtomId3 = methaneAtomId - 3
                 });
 
                 lammpsData.MethaneCount++;
                 nowAtomId = methaneAtomId;
                 nowBondId = methaneBondId;
-                nowChainId = methaneAtomCId;
-
+                nowChainId = methaneChainId;
             }
 
             if (fixInvalidAxis)

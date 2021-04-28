@@ -55,7 +55,7 @@ namespace LammpsWithAngle
         [Option("-fia|--fix-invalid-axis", Description = "Determine whether fix invalid axis. (false)")]
         public bool FixInvalidAxis { get; set; } = false;
 
-        private async Task OnExecuteAsync()
+        private async Task<int> OnExecuteAsync()
         {
             var appOptions = new AppOptions
             {
@@ -70,14 +70,28 @@ namespace LammpsWithAngle
 
             Log.Logger.Information(appOptions.ToString());
 
-            LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(appOptions.SourceFile);
-            lammpsData = lammpsData.CompleteBondAndAngle(appOptions.WaterModel, appOptions.Large27, appOptions.FixInvalidAxis);
-            Log.Logger.Information("End to complete.");
-
-            await LammpsDataSerializer.SerializeToFileAsync(lammpsData, appOptions.TargetFile, new LammpsDataSerializeOptions
+            try
             {
-                RemoveSurfaceAngles = appOptions.RemoveSurfaceAngles
-            });
+                LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(appOptions.SourceFile);
+                lammpsData = lammpsData.CompleteBondAndAngle(appOptions.WaterModel, appOptions.Large27, appOptions.FixInvalidAxis);
+                Log.Logger.Information("End to complete.");
+
+                await LammpsDataSerializer.SerializeToFileAsync(lammpsData, appOptions.TargetFile, new LammpsDataSerializeOptions
+                {
+                    RemoveSurfaceAngles = appOptions.RemoveSurfaceAngles
+                });
+            }
+            catch (Exception e)
+            {
+#if DEBUG
+                await Console.Error.WriteAsync(e.ToString());
+#else
+                await Console.Error.WriteLineAsync(e.Message);
+#endif
+                return 1;
+            }
+
+            return 0;
         }
 
         public class AppOptions

@@ -33,7 +33,7 @@ namespace LammpsWithAngle
                 //'Ow  Hw  Cm  Hm
                 //'1   2   3   4
                 lammpsData.Masses.Add(4, lammpsData.Masses[2]);
-                await WriteDataAsync(writer, "Masses", lammpsData.Masses.Select(mass => $"{mass.Key}   {mass.Value}"), options);
+                await WriteDataAsync(writer, "Masses", lammpsData.Masses.Select(mass => $"{mass.Key}   {mass.Value}    # {(AtomType) mass.Key}"), options);
                 Log.Logger.Information("Serialize Masses.");
             }
             await WriteDataAsync(writer, $"Atoms  # {options.Mode}", lammpsData.Atoms, options);

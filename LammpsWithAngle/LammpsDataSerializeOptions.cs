@@ -4,6 +4,6 @@
     {
         public bool RemoveSurfaceAngles { get; set; }
         public string NewLine { get; set; } = "\n";
-        public string Mode { get; set; } = "all";
+        public string Mode { get; set; } = "full";
     }
 }
