@@ -75,7 +75,7 @@ namespace LammpsWithAngle.Data
 
         public static Atom Parse(IEnumerable<string> data, string mode = "atomic")
         {
-            if (mode is "all")
+            if (mode is "full")
             {
                 return new Atom(data.Select(double.Parse));
             }

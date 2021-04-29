@@ -17,7 +17,7 @@ namespace LammpsWithAngle
         public static async Task<int> Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Information()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .MinimumLevel.Override("System", LogEventLevel.Information)
                 .Enrich.FromLogContext()
@@ -40,7 +40,7 @@ namespace LammpsWithAngle
         [Argument(1, Description = "The lammps data file with angle dat. (result.lmp)")]
         public string TargetFile { get; set; } = "result.lmp";
 
-        [Option("-read-mode", Description = "Determine read source file mode. (atomic)")]
+        [Option("--read-mode", Description = "Determine read source file mode. (atomic)")]
         public string ReadMode { get; set; } = "atomic";
         
         [Option("-wm|--water-model", Description = "Water model name will be used. (SPC)")]
@@ -72,9 +72,15 @@ namespace LammpsWithAngle
 
             try
             {
-                LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(appOptions.SourceFile);
+                LammpsData lammpsData = await LammpsDataSerializer.DeserializeFromFileAsync(appOptions.SourceFile, new LammpsDataDeserializeOptions
+                {
+                    Mode = appOptions.ReadMode
+                });
+
+                Log.Logger.Information("Start to complete.");
+                DateTimeOffset startTome = DateTimeOffset.Now;
                 lammpsData = lammpsData.CompleteBondAndAngle(appOptions.WaterModel, appOptions.Large27, appOptions.FixInvalidAxis);
-                Log.Logger.Information("End to complete.");
+                Log.Logger.Information($"End to complete. Cost {DateTimeOffset.Now - startTome}.");
 
                 await LammpsDataSerializer.SerializeToFileAsync(lammpsData, appOptions.TargetFile, new LammpsDataSerializeOptions
                 {
@@ -83,14 +89,9 @@ namespace LammpsWithAngle
             }
             catch (Exception e)
             {
-#if DEBUG
-                await Console.Error.WriteAsync(e.ToString());
-#else
-                await Console.Error.WriteLineAsync(e.Message);
-#endif
+                Log.Logger.Error($"Error: {e}");
                 return 1;
             }
-
             return 0;
         }
 
@@ -112,7 +113,7 @@ namespace LammpsWithAngle
                 builder.AppendLine($"Water model is {WaterModel}.");
                 builder.AppendLine($"Large 27 times is {Large27}.");
                 builder.AppendLine($"Remove surface angles is {RemoveSurfaceAngles}.");
-                builder.AppendLine($"Fix invalid axis is {FixInvalidAxis}.");
+                builder.Append($"Fix invalid axis is {FixInvalidAxis}.");
                 return builder.ToString();
             }
         }
