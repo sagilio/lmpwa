@@ -3,9 +3,7 @@ using LammpsWithAngle.Data;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using LammpsWithAngle.Static;
 using Serilog;
-using System.Runtime.CompilerServices;
 
 namespace LammpsWithAngle
 {
@@ -255,7 +253,7 @@ namespace LammpsWithAngle
             return lammpsData;
         }
 
-        internal static List<Atom> Large27(this ICollection<Atom> sourceAtoms, LammpsData lammpsData)
+        private static List<Atom> Large27(this ICollection<Atom> sourceAtoms, LammpsData lammpsData)
         {
             var atoms = new List<Atom>();
             var nowAtomId = 0;

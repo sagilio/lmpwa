@@ -18,7 +18,7 @@ namespace LammpsWithAngle
 
         public static async Task SerializeToFileAsync(LammpsData lammpsData, string path, LammpsDataSerializeOptions options)
         {
-            Log.Logger.Information("Start to serialize to file.");
+            Log.Logger.Debug("Start to serialize to file.");
             await using FileStream fileStream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.Read);
             await using var writer = new StreamWriter(fileStream);
             string header = SerializeHeader(lammpsData, options);
@@ -34,14 +34,14 @@ namespace LammpsWithAngle
                 //'1   2   3   4
                 lammpsData.Masses.Add(4, lammpsData.Masses[2]);
                 await WriteDataAsync(writer, "Masses", lammpsData.Masses.Select(mass => $"{mass.Key}   {mass.Value}    # {(AtomType) mass.Key}"), options);
-                Log.Logger.Information("Serialize Masses.");
+                Log.Logger.Debug("Serialize Masses.");
             }
             await WriteDataAsync(writer, $"Atoms  # {options.Mode}", lammpsData.Atoms, options);
-            Log.Logger.Information("Serialized Atoms, count is {0}", lammpsData.AtomCount);
+            Log.Logger.Debug("Serialized Atoms, count is {0}", lammpsData.AtomCount);
             await WriteDataAsync(writer, "Bonds", lammpsData.Bonds, options);
-            Log.Logger.Information("Serialized Bonds, count is {0}", lammpsData.BondCount);
+            Log.Logger.Debug("Serialized Bonds, count is {0}", lammpsData.BondCount);
             await WriteDataAsync(writer, "Angles", lammpsData.Angles, options);
-            Log.Logger.Information("Serialized Angles, count is {0}", lammpsData.AngleCount);
+            Log.Logger.Debug("Serialized Angles, count is {0}", lammpsData.AngleCount);
             Log.Logger.Information("Serialized Success, Header is: {1}{0}", header, options.NewLine);
         }
 

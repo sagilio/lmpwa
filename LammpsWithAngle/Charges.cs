@@ -1,7 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 using System;
 
-namespace LammpsWithAngle.Static
+namespace LammpsWithAngle
 {
     public class Charges
     {
