@@ -1,0 +1,11 @@
+<Directives>
+  <Application>
+    <Assembly Name="McMaster.Extensions.CommandLineUtils" Dynamic="Required All">
+      <Type Name="McMaster.Extensions.CommandLineUtils.Abstractions.ValueParserProvider" Dynamic="Required All">
+        <Method Name="GetParser" Dynamic="Required">
+          <GenericArgument Name="System.Double,System.Private.CoreLib" />
+        </Method>
+      </Type>
+    </Assembly>
+  </Application>
+</Directives>

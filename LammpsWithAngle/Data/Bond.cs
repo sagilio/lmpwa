@@ -30,15 +30,15 @@ namespace LammpsWithAngle.Data
             set => _data[1] = value;
         }
 
-        public double AtomId1
+        public int AtomId1
         {
-            get => _data[2];
+            get => (int) _data[2];
             set => _data[2] = value;
         }
 
-        public double AtomId2
+        public int AtomId2
         {
-            get => _data[3];
+            get => (int) _data[3];
             set => _data[3] = value;
         }
         
